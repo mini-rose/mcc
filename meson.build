@@ -4,8 +4,10 @@ project(
 
 # Keep this in alphabetical order please!
 sources = [
+  'src/alloc.c',
   'src/args.c',
   'src/errmsg.c',
+  'src/file.c',
   'src/help.c',
   'src/mcc.c',
   'src/mcc_compile.c',
@@ -15,6 +17,7 @@ sources = [
   'src/settings.c',
   'src/strlist.c',
   'src/term.c',
+  'src/tokenize.c'
 ]
 
 includes = include_directories('include')
@@ -23,7 +26,7 @@ libdir = get_option('prefix') / get_option('libdir')
 bindir = get_option('prefix') / get_option('bindir')
 
 link_args = ['-fsanitize=address']
-c_args = ['-fsanitize=address', '-DOPT_ALLOC_SLAB_INFO=1']
+c_args = ['-Wall', '-Wextra', '-fsanitize=address', '-DOPT_ALLOC_SLAB_INFO=1']
 
 exe = executable(
   'mcc', sources,

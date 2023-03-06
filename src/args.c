@@ -2,6 +2,7 @@
    Copyright (c) 2023 bellrise */
 
 #include <getopt.h>
+#include <mcc/alloc.h>
 #include <mcc/args.h>
 #include <mcc/errmsg.h>
 #include <mcc/help.h>
@@ -25,6 +26,7 @@ void args_parse(int argc, char **argv)
 	    {"help", optional_argument, 0, 'h'},
 	    {"helpdir", required_argument, 0, 0},
 	    {"output", required_argument, 0, 'o'},
+	    {"ldd", required_argument, 0, 0},
 	    {"shared", no_argument, 0, 's'},
 	    {"verbose", no_argument, 0, 'V'},
 	    {"version", no_argument, 0, 'v'},
@@ -35,7 +37,7 @@ void args_parse(int argc, char **argv)
 
 	if (argc == 1) {
 		help_short();
-		return;
+		exit(0);
 	}
 
 	while (1) {
@@ -55,9 +57,7 @@ void args_parse(int argc, char **argv)
 			exit(0);
 			break;
 		case 'o':
-			if (settings->output)
-				free(settings->output);
-			settings->output = strdup(optarg);
+			settings->output = slab_strdup(optarg);
 			break;
 		case 's':
 			settings->to_shared = true;
@@ -98,15 +98,19 @@ static void long_opt(const char *opt, const char *value)
 	if (!strcmp(opt, "helpdir")) {
 		if (!value)
 			errmsg("missing dirname after --helpdir");
-		if (s->helpdir)
-			free(s->helpdir);
-		s->helpdir = strdup(value);
+		s->helpdir = slab_strdup(value);
 	}
 
 	if (!strcmp(opt, "output")) {
 		if (!value)
 			errmsg("missing filename after --output");
-		s->output = strdup(value);
+		s->output = slab_strdup(value);
+	}
+
+	if (!strcmp(opt, "ldd")) {
+		if (!value)
+			errmsg("missing dynamic linker path after --ldd");
+		s->ldd = slab_strdup(value);
 	}
 
 	if (!strcmp(opt, "shared"))

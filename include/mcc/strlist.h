@@ -10,4 +10,3 @@ struct strlist
 };
 
 void strlist_append(struct strlist *list, char *str);
-void strlist_destroy(struct strlist *list);

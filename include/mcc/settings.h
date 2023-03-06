@@ -15,6 +15,9 @@ struct settings
 	bool use_colors;
 	bool to_object;
 	bool to_shared;
+
+	/* link settings */
+	char *ldd;
 };
 
 void settings_defaults();

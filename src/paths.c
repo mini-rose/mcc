@@ -3,6 +3,7 @@
 
 #include <libgen.h>
 #include <limits.h>
+#include <mcc/alloc.h>
 #include <mcc/paths.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,7 +17,7 @@ bool path_is_c_file(const char *path)
 
 bool path_is_mocha_file(const char *path)
 {
-	return !strcmp(path + strlen(path) - 3, ".ff");
+	return !strcmp(path + strlen(path) - 3, ".mo");
 }
 
 bool path_is_object_file(const char *path)
@@ -26,8 +27,8 @@ bool path_is_object_file(const char *path)
 
 char *path_tmp_object(const char *tip)
 {
-	char *p = malloc(PATH_MAX);
-	char *base = strdup(tip);
+	char *p = slab_alloc(PATH_MAX);
+	char *base = slab_strdup(tip);
 	int iter = 0;
 
 	/*
@@ -43,7 +44,6 @@ char *path_tmp_object(const char *tip)
 			break;
 	}
 
-	free(base);
 	return p;
 }
 

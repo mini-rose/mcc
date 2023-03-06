@@ -24,6 +24,7 @@ void help()
 	    "  -h, --help[=topic]    show a help page and exit\n"
 	    "  --helpdir <dir>       directory containing help pages\n"
 	    "  -o, --output <path>   output file\n"
+	    "  --ldd <path>          dynamic linker to use\n"
 	    "  -s, --shared          link into a shared object\n"
 	    "  -V, --verbose         be more verbose\n"
 	    "  -v, --version         output the compiler version and exit\n");
@@ -65,8 +66,6 @@ static void help_list_topics()
 	for (int i = 0; i < topics.len; i++) {
 		printf("  %s\n", topics.strs[i]);
 	}
-
-	strlist_destroy(&topics);
 }
 
 static void dump_help_file(const char *name)
@@ -107,6 +106,4 @@ void help_topic(const char *topic)
 		dump_help_file(topic);
 		break;
 	}
-
-	strlist_destroy(&topics);
 }

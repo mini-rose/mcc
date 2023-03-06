@@ -34,7 +34,6 @@ int mcc_run()
 			}
 
 			strlist_append(&objects, p);
-			free(p);
 
 		} else if (path_is_object_file(s->inputs.strs[i])) {
 			/* Object file */
@@ -50,7 +49,6 @@ int mcc_run()
 			}
 
 			strlist_append(&objects, p);
-			free(p);
 
 		} else {
 			warnmsg("don't know what to do with '%s'",
@@ -74,6 +72,5 @@ int mcc_run()
 end:
 	for (int i = 0; i < objects.len; i++)
 		remove(objects.strs[i]);
-	strlist_destroy(&objects);
 	return 0;
 }
