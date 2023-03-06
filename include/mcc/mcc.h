@@ -1,66 +1,29 @@
-/* mcc.h - mocha compiler
-   Copyright (c) 2023 mini-rose */
+/* mcc/mcc.h
+   Copyright (c) 2023 bellrise */
 
 #pragma once
-#include <stdbool.h>
-#include <time.h>
 
 #define MCC_MAJOR 0
-#define MCC_MINOR 9
+#define MCC_MINOR 11
 
-#define MCC_TARGET "linux-x86_64"
+#define MCC_LD  "/usr/bin/ld"
+#define MCC_CC  "/usr/bin/cc"
+#define MCC_LDD "/lib/ld-linux-x86-64.so.2"
 
-#define DEFAULT_OUT  "a.out"
-#define DEFAULT_LD   "/lib/ld-linux-x86-64.so.2"
-#define DEFAULT_ROOT "/usr/lib/mocha"
+#define MCC_HELP_DIR "help"
 
-#define LD_MUSL "/lib/ld-musl-x86_64.so.1"
+#define MCC_CMDSIZ 8192
 
-#if !defined MCC_ROOT
-#define MCC_ROOT DEFAULT_ROOT
-#endif
+struct strlist;
 
-typedef struct
+enum mcc_link_mode
 {
-	bool show_ast;
-	bool show_tokens;
-	bool global;
-	bool using_bs;
-	bool verbose;
+	MCC_LINK_EXEC,
+	MCC_LINK_SHARED
+};
 
-	/* Package manager */
-	bool pm;
-	bool pm_run;
-	const char *pkgname;
-	const char *pkgver;
-	long long compile_start;
-
-	/* Emit */
-	bool emit_stacktrace;
-	bool emit_varnames;
-
-	/* Warnings */
-	bool warn_unused;
-	bool warn_random;
-	bool warn_empty_block;
-	bool warn_prefer_ref;
-	bool warn_self_name;
-
-	/* Extra */
-	bool x_sanitize_alloc;
-	bool x_dump_alloc;
-
-	char *opt;
-	char *output;
-	char *input;
-	char *sysroot; /* /usr/lib/mocha */
-	char *dyn_linker;
-} settings_t;
-
-/* Compile all input files into a single binary. */
-void compile(settings_t *settings);
-
-/* Compile a C source code file into an object. */
-char *compile_c_object(settings_t *settings, char *file);
-
-char *make_modname(char *file);
+int mcc_run();
+int mcc_compile(const char *input, const char *output);
+int mcc_compile_c(const char *intput, const char *output);
+int mcc_link(enum mcc_link_mode mode, struct strlist *inputs,
+	     const char *output);

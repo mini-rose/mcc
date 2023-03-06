@@ -1,4 +1,5 @@
 mcc
 ===
 
-Mocha compiler
+Here lies the mocha compiler. For language users, it is recommended to use the
+front-end tool instead (namely `mocha`) for creating projects.
