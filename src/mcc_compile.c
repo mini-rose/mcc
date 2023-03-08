@@ -42,7 +42,8 @@ int mcc_compile_c(const char *input, const char *output)
 
 	infomsg("compile-c %s -> %s", input, output);
 
-	snprintf(cmd, BUFSIZ, "%s -c -o %s %s", MCC_CC, output, input);
+	snprintf(cmd, BUFSIZ, "%s -c -o %s %s", settings_global()->cc, output,
+		 input);
 
 	if (settings_global()->verbose)
 		infomsg("issuing %s", cmd);

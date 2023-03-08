@@ -12,7 +12,9 @@ void settings_defaults()
 
 	memset(s, 0, sizeof(*s));
 	s->use_colors = true;
-	s->ldd = slab_strdup(MCC_LDD);
+	s->ldd = MCC_LDD;
+	s->cc = MCC_CC;
+	s->ld = MCC_LD;
 }
 
 struct settings *settings_global()

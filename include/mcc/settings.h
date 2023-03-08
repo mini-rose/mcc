@@ -11,6 +11,8 @@ struct settings
 	struct strlist inputs;
 	char *output;
 	char *helpdir;
+	char *cc;
+	char *ld;
 	bool verbose;
 	bool use_colors;
 	bool to_object;

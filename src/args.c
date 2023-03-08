@@ -23,10 +23,12 @@ void args_parse(int argc, char **argv)
 	int c;
 
 	static struct option long_opts[] = {
+	    {"cc", required_argument, 0, 0},
 	    {"color", optional_argument, 0, 0},
 	    {"help", optional_argument, 0, 'h'},
 	    {"helpdir", required_argument, 0, 0},
 	    {"output", required_argument, 0, 'o'},
+	    {"ld", required_argument, 0, 0},
 	    {"ldd", required_argument, 0, 0},
 	    {"shared", no_argument, 0, 's'},
 	    {"verbose", no_argument, 0, 'V'},
@@ -85,6 +87,11 @@ static void long_opt(const char *opt, const char *value)
 {
 	struct settings *s = settings_global();
 
+	if (!strcmp(opt, "cc")) {
+		if (value)
+			s->cc = strdup(value);
+	}
+
 	if (!strcmp(opt, "color")) {
 		if (!value)
 			s->use_colors = true;
@@ -109,6 +116,11 @@ static void long_opt(const char *opt, const char *value)
 		if (!value)
 			errmsg("missing filename after --output");
 		s->output = slab_strdup(value);
+	}
+
+	if (!strcmp(opt, "ld")) {
+		if (value)
+			s->ld = strdup(value);
 	}
 
 	if (!strcmp(opt, "ldd")) {

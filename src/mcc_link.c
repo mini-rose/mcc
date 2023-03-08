@@ -21,8 +21,8 @@ int mcc_link(enum mcc_link_mode mode, struct strlist *inputs,
 	}
 
 	memset(cmd, 0, MCC_CMDSIZ);
-	snprintf(cmd, MCC_CMDSIZ, "%s -o %s -dynamic-linker %s %s", MCC_LD,
-		 output, MCC_LDD,
+	snprintf(cmd, MCC_CMDSIZ, "%s -o %s -dynamic-linker %s %s",
+		 settings_global()->ld, output, settings_global()->ldd,
 		 settings_global()->to_shared ? "-shared " : "");
 
 	/*
