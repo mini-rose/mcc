@@ -17,6 +17,7 @@ void p_parse_module(struct p_context *p)
 	 */
 
 	p->here = p->module->ast;
+	tok = p_next_tok(p);
 
 	do {
 		tok = p_cur_tok(p);
@@ -38,6 +39,20 @@ void p_parse_module(struct p_context *p)
 			tok = p_next_tok(p);
 
 	} while (tok->type != T_END);
+
+	/*
+	 * After parsing the top-level declarations, we want to return to parse
+	 * the function implementations. This is done because we want to be able
+	 * to access all the top-level types and functions without the need to
+	 * define them before.
+	 */
+
+	struct node *nod = p->module->ast->child;
+	while (nod && nod->next) {
+		if (nod->kind == NODE_FN_DECL)
+			p_parse_fn_def(p, nod->fn_decl);
+		nod = nod->next;
+	}
 }
 
 struct module *p_module_create()

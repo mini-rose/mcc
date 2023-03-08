@@ -13,6 +13,7 @@ sources = [
   'src/mcc_compile.c',
   'src/mcc_link.c',
   'src/mcc_run.c',
+  'src/p_block.c',
   'src/p_fn.c',
   'src/p_module.c',
   'src/p_node.c',

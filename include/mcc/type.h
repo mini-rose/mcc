@@ -7,7 +7,7 @@ struct token;
 
 enum type_kind
 {
-	TY_UNKNOWN,
+	TY_NULL,
 	TY_INT,     /* iN */
 	TY_POINTER, /* &T */
 	TY_OBJECT,  /* type {} */

@@ -29,6 +29,17 @@ struct token *p_next_tok(struct p_context *p)
 	return p->tokens->tokens[p->tokens->iter++];
 }
 
+void p_set_pos_tok(struct p_context *p, struct token *at)
+{
+	for (int i = 0; i < p->tokens->len; i++) {
+		if (p->tokens->tokens[i] != at)
+			continue;
+
+		p->tokens->iter = i + 1;
+		break;
+	}
+}
+
 void p_skip_block(struct p_context *p)
 {
 	struct token *tok;

@@ -20,8 +20,10 @@ static void resolve_type(struct p_context *p, struct type *ty)
 {
 	struct token *tok = p_cur_tok(p);
 
-	if (parse_builtin_type_if_possible(tok, ty))
+	if (parse_builtin_type_if_possible(tok, ty)) {
+		p_next_tok(p);
 		return;
+	}
 
 	/* TODO: lookup other than builtin types here */
 

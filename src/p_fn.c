@@ -45,8 +45,10 @@ static void parse_params(struct p_context *p, struct p_fn_decl *decl)
 	if (tok->type != T_LPAREN)
 		p_err(p, "expected `(`");
 
+	tok = p_next_tok(p);
+
 	while (1) {
-		tok = p_next_tok(p);
+		tok = p_cur_tok(p);
 
 		if (tok->type == T_RPAREN)
 			break;
@@ -71,6 +73,15 @@ static void parse_params(struct p_context *p, struct p_fn_decl *decl)
 		tok = p_next_tok(p);
 
 		p_parse_type(p, &param->type);
+
+		tok = p_cur_tok(p);
+		if (tok->type == T_RPAREN)
+			break;
+
+		if (tok->type != T_COMMA)
+			p_err(p, "expected comma after parameter");
+
+		tok = p_next_tok(p);
 	}
 
 	/* Move after ) */
@@ -83,7 +94,7 @@ void p_parse_fn_decl(struct p_context *p)
 	struct node *node;
 
 	/* 'fn' keyword */
-	tok = p_next_tok(p);
+	tok = p_cur_tok(p);
 	if (tok->type != T_FN)
 		p_err(p, "expected `fn` keyword");
 
@@ -113,6 +124,14 @@ void p_parse_fn_decl(struct p_context *p)
 	if (tok->type == T_LPAREN)
 		parse_params(p, node->fn_decl);
 
+	/* Return type */
+	tok = p_cur_tok(p);
+	if (tok->type == T_ARROW) {
+		p_next_tok(p);
+		node->fn_decl->return_type = slab_alloc(sizeof(struct type));
+		p_parse_type(p, node->fn_decl->return_type);
+	}
+
 	tok = p_cur_tok(p);
 	node->fn_decl->block_start = tok;
 
@@ -121,4 +140,15 @@ void p_parse_fn_decl(struct p_context *p)
 	p->here = node->parent;
 }
 
-void p_parse_fn_def(struct p_context *p) { }
+void p_parse_fn_def(struct p_context *p, struct p_fn_decl *decl)
+{
+	struct node *node;
+
+	node = p_node_add_child(p->module->ast);
+	node->kind = NODE_FN_DEF;
+	node->fn_def = slab_alloc(sizeof(struct p_fn_def));
+	node->fn_def->decl = decl;
+
+	p_set_pos_tok(p, decl->block_start);
+	p_parse_block(p, node);
+}

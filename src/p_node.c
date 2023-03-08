@@ -66,6 +66,9 @@ static void print_fn_sig(struct p_fn_decl *fn)
 	} else {
 		fputc(')', stdout);
 	}
+
+	if (fn->return_type && fn->return_type->kind != TY_NULL)
+		printf(" -> %s", type_str(fn->return_type));
 }
 
 static void p_node_dump_level(struct node *node, int level)
@@ -82,6 +85,9 @@ static void p_node_dump_level(struct node *node, int level)
 		break;
 	case NODE_FN_DECL:
 		print_fn_sig(node->fn_decl);
+		break;
+	case NODE_FN_DEF:
+		printf("for `%s`", node->fn_def->decl->name);
 		break;
 	default:
 		break;

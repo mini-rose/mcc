@@ -80,14 +80,20 @@ struct p_fn_decl
 	int n_params;
 	struct p_generic **generics;
 	int n_generics;
+	struct type *return_type;
 	struct token *place;
 	struct token *block_start;
+};
+
+struct p_fn_def
+{
+	struct p_fn_decl *decl;
 };
 
 /* parse expressions */
 void p_parse_module(struct p_context *p);
 void p_parse_fn_decl(struct p_context *p);
-void p_parse_fn_def(struct p_context *p);
+void p_parse_fn_def(struct p_context *p, struct p_fn_decl *decl);
 void p_parse_use(struct p_context *p);
 void p_parse_block(struct p_context *p, struct node *block);
 void p_parse_type(struct p_context *p, struct type *ty);
@@ -97,6 +103,7 @@ void p_err(struct p_context *p, const char *fmt, ...);
 void p_skip_block(struct p_context *p);
 struct token *p_cur_tok(struct p_context *p);
 struct token *p_next_tok(struct p_context *p);
+void p_set_pos_tok(struct p_context *p, struct token *at);
 
 /* module */
 struct module *p_module_create();
