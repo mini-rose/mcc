@@ -13,11 +13,19 @@ sources = [
   'src/mcc_compile.c',
   'src/mcc_link.c',
   'src/mcc_run.c',
+  'src/p_fn.c',
+  'src/p_module.c',
+  'src/p_node.c',
+  'src/p_type.c',
+  'src/p_use.c',
+  'src/p_utils.c',
+  'src/parse.c',
   'src/paths.c',
   'src/settings.c',
   'src/strlist.c',
   'src/term.c',
-  'src/tokenize.c'
+  'src/tokenize.c',
+  'src/type.c',
 ]
 
 includes = include_directories('include')

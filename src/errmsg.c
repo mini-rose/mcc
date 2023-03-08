@@ -1,6 +1,7 @@
 /* errmsg.c
    Copyright (c) 2023 bellrise */
 
+#include <ctype.h>
 #include <mcc/errmsg.h>
 #include <mcc/file.h>
 #include <mcc/settings.h>
@@ -54,36 +55,88 @@ void infomsg(char *fmt, ...)
 	va_end(args);
 }
 
-const char *errstr(enum error_code e)
+void errsrc(struct file *source, struct token *tok, const char *fmt, ...)
 {
-	struct err_entry
-	{
-		int id;
-		const char *msg;
-	};
+	va_list args;
 
-	static const struct err_entry error_strs[] = {
-	    {E_UNTERMSTR, "unterminated string"}};
-	static const int n = sizeof(error_strs) / sizeof(*error_strs);
-
-	if ((int) e >= n)
-		return "???";
-	return error_strs[e].msg;
+	va_start(args, fmt);
+	errsrc_v(source, tok, fmt, args);
 }
 
-void errsrc(struct file *source, struct token *tok, enum error_code e)
+void errsrc_v(struct file *source, struct token *tok, const char *fmt,
+	      va_list args)
 {
-	char *p = source->source;
-	int line = 0;
+	const char *p = source->source;
+	const char *start;
+	const char *end;
+	int line = 1;
+	int spaces = 0;
+	int tabs = 0;
+	int offset;
 
+	/* Find the line number */
 	while (p != tok->val) {
 		if (*p == '\n')
 			line++;
 		p++;
 	}
 
-	fprintf(stderr, "mcc: %serror%s[%d]: %s%s\n", color_err(), color_end(),
-		e, color_bold_white(), errstr(e));
+	/* Walk back to the start of the line */
+	start = tok->val;
+	while (start >= source->source) {
+		if (*start == '\n') {
+			start++;
+			break;
+		}
+
+		start--;
+	}
+
+	/* Walk to the end of the line */
+	end = tok->val;
+	while (*end) {
+		if (*end == '\n')
+			break;
+		end++;
+	}
+
+	/* Count the whitespace before the beginning of the line */
+	p = start;
+	while (p != end) {
+		if (!isspace(*p))
+			break;
+
+		(*p == '\t') ? tabs++ : spaces++;
+		p++;
+	}
+
+	fprintf(stderr, "mcc: %serror%s in %s: %s", color_err(), color_end(),
+		source->path, color_bold_white());
+	vfprintf(stderr, fmt, args);
+	fprintf(stderr, "%s\n", color_end());
+
+	/* Print the source, highlighting the error part */
+	offset = fprintf(stderr, "% 4d", line);
+	fprintf(stderr, " | %.*s%s%.*s%s%.*s\n", (int) (tok->val - start),
+		start, color_err(), (int) (tok->len), tok->val, color_end(),
+		(int) (end - (tok->val + tok->len)), tok->val + tok->len);
+
+	for (int i = 0; i < offset; i++)
+		fputc(' ', stderr);
+
+	offset = tok->val - start;
+	fprintf(stderr, " | %s", color_err());
+
+	for (int i = 0; i < tabs; i++)
+		fputc('\t', stderr);
+	for (int i = 0; i < spaces + offset; i++)
+		fputc(' ', stderr);
+
+	fputc('^', stderr);
+	for (int i = 0; i < tok->len - 1; i++)
+		fputc('~', stderr);
+
+	fprintf(stderr, "%s\n", color_end());
 
 	exit(1);
 }

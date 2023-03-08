@@ -93,7 +93,7 @@ struct token_list *tokenize(struct file *source)
 
 			if (!q) {
 				struct token t = {.val = p, .len = 2};
-				errsrc(f, &t, E_UNTERMSTR);
+				errsrc(f, &t, "unterminated string");
 			}
 
 			p += q - p + 2;
@@ -140,7 +140,7 @@ struct token_list *tokenize(struct file *source)
 
 			if (!q) {
 				struct token t = {.val = p - 1, .len = 1};
-				errsrc(f, &t, E_UNTERMSTR);
+				errsrc(f, &t, "unterminated string");
 			}
 
 			tok = token_new(last = T_STRING, p, q - p);
@@ -150,7 +150,7 @@ struct token_list *tokenize(struct file *source)
 			continue;
 		}
 
-		/* Tokenize string and quess it type */
+		/* Tokenize string and guess it type */
 		if (isalpha(*p) || *p == '_') {
 			struct token *tok = NULL;
 			char *str;
@@ -283,6 +283,11 @@ struct token_list *tokenize(struct file *source)
 				token_list_append(list, tok);
 				p++;
 				break;
+			case ':':
+				tok = token_new(last = T_COLON, p, 1);
+				token_list_append(list, tok);
+				p++;
+				break;
 			case '<':
 				tok = token_new(last = T_LANGLE, p, 1);
 				token_list_append(list, tok);
@@ -290,6 +295,11 @@ struct token_list *tokenize(struct file *source)
 				break;
 			case '>':
 				tok = token_new(last = T_RANGLE, p, 1);
+				token_list_append(list, tok);
+				p++;
+				break;
+			case '&':
+				tok = token_new(last = T_AND, p, 1);
 				token_list_append(list, tok);
 				p++;
 				break;
@@ -350,24 +360,19 @@ struct token_name
 };
 
 static const struct token_name toknames[] = {
-    {T_NEWLINE, "newline"},   {T_FN, "fn"},
-    {T_TYPE, "type"},         {T_RET, "ret"},
-    {T_NUMBER, "number"},     {T_STRING, "string"},
-    {T_TRUE, "true"},         {T_FALSE, "false"},
-    {T_IDENT, "ident"},       {T_PUNCT, "punct"},
-    {T_LPAREN, "lparen"},     {T_RPAREN, "rparen"},
-    {T_LBRACE, "lbrace"},     {T_RBRACE, "rbrace"},
-    {T_LBRACKET, "lbracket"}, {T_RBRACKET, "rbracket"},
-    {T_LANGLE, "langle"},     {T_RANGLE, "rangle"},
-    {T_COMMA, "comma"},       {T_DOT, "dot"},
-    {T_END, "end"},           {T_EQ, "eq"},
-    {T_NEQ, "neq"},           {T_ASS, "assign"},
-    {T_ADD, "add"},           {T_ADDA, "addassign"},
-    {T_ARROW, "arrow"},       {T_DEC, "decrement"},
-    {T_INC, "increment"},     {T_SUBA, "subassign"},
-    {T_DIV, "divide"},        {T_MOD, "modulo"},
-    {T_DIVA, "divassign"},    {T_MODA, "modassign"},
-    {T_MUL, "multiply"},      {T_SUB, "subtract"}};
+    {T_NEWLINE, "newline"},   {T_FN, "fn"},          {T_TYPE, "type"},
+    {T_RET, "ret"},           {T_NUMBER, "number"},  {T_STRING, "string"},
+    {T_TRUE, "true"},         {T_FALSE, "false"},    {T_IDENT, "ident"},
+    {T_PUNCT, "punct"},       {T_LPAREN, "lparen"},  {T_RPAREN, "rparen"},
+    {T_LBRACE, "lbrace"},     {T_RBRACE, "rbrace"},  {T_LBRACKET, "lbracket"},
+    {T_RBRACKET, "rbracket"}, {T_LANGLE, "langle"},  {T_RANGLE, "rangle"},
+    {T_COMMA, "comma"},       {T_DOT, "dot"},        {T_COLON, "colon"},
+    {T_END, "end"},           {T_EQ, "eq"},          {T_NEQ, "neq"},
+    {T_ASS, "assign"},        {T_ADD, "add"},        {T_ADDA, "addassign"},
+    {T_ARROW, "arrow"},       {T_DEC, "decrement"},  {T_INC, "increment"},
+    {T_SUBA, "subassign"},    {T_DIV, "divide"},     {T_MOD, "modulo"},
+    {T_DIVA, "divassign"},    {T_MODA, "modassign"}, {T_MUL, "multiply"},
+    {T_SUB, "subtract"},      {T_AND, "addr"}};
 
 static const int n_toknames = sizeof(toknames) / sizeof(*toknames);
 

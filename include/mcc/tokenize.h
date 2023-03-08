@@ -29,6 +29,7 @@ enum token_type
 	T_RANGLE,   // >
 	T_COMMA,    // ,
 	T_DOT,      // .
+	T_COLON,    // :
 	T_END,
 
 	/* Operator types */
@@ -46,7 +47,8 @@ enum token_type
 	T_DIVA,  // /=
 	T_MODA,  // %=
 	T_MUL,   // *
-	T_SUB    // -
+	T_SUB,   // -
+	T_AND,   // &
 };
 
 struct token

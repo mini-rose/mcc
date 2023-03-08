@@ -13,6 +13,7 @@
 #include <string.h>
 
 static void long_opt(const char *opt, const char *value);
+static void extra_opt(const char *opt);
 static void version();
 
 void args_parse(int argc, char **argv)
@@ -41,7 +42,7 @@ void args_parse(int argc, char **argv)
 	}
 
 	while (1) {
-		c = getopt_long(argc, argv, "cho:sVv", long_opts, &opt_index);
+		c = getopt_long(argc, argv, "cho:sVvX:", long_opts, &opt_index);
 		if (c == -1)
 			break;
 
@@ -68,6 +69,9 @@ void args_parse(int argc, char **argv)
 		case 'v':
 			version();
 			exit(0);
+			break;
+		case 'X':
+			extra_opt(optarg);
 			break;
 		}
 	}
@@ -123,6 +127,14 @@ static void long_opt(const char *opt, const char *value)
 		version();
 		exit(0);
 	}
+}
+
+static void extra_opt(const char *opt)
+{
+	struct settings *s = settings_global();
+
+	if (!strcmp(opt, "tree"))
+		s->x_tree = true;
 }
 
 static void version()

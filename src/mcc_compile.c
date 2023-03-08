@@ -4,6 +4,7 @@
 #include <mcc/errmsg.h>
 #include <mcc/file.h>
 #include <mcc/mcc.h>
+#include <mcc/parser.h>
 #include <mcc/paths.h>
 #include <mcc/settings.h>
 #include <mcc/tokenize.h>
@@ -14,6 +15,7 @@
 int mcc_compile(const char *input, const char *output)
 {
 	struct token_list *tokens;
+	struct module *module;
 	struct file *fil;
 
 	infomsg("compile %s -> %s", input, output);
@@ -23,8 +25,10 @@ int mcc_compile(const char *input, const char *output)
 		errmsg("failed to open source file `%s`", input);
 
 	tokens = tokenize(fil);
+	module = mcc_parse(tokens);
 
-	token_list_dump(tokens);
+	if (settings_global()->x_tree)
+		p_node_dump(module->ast);
 
 	file_unmap(fil);
 	return 0;

@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <stdarg.h>
+
 struct token;
 struct file;
 
@@ -10,11 +12,6 @@ void errmsg(char *fmt, ...) __attribute__((noreturn));
 void warnmsg(char *fmt, ...);
 void infomsg(char *fmt, ...);
 
-enum error_code
-{
-	E_UNTERMSTR
-};
-
-const char *errstr(enum error_code e);
-
-void errsrc(struct file *source, struct token *tok, enum error_code);
+void errsrc(struct file *source, struct token *tok, const char *fmt, ...);
+void errsrc_v(struct file *source, struct token *tok, const char *fmt,
+	      va_list args);

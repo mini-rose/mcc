@@ -18,16 +18,16 @@ void help()
 {
 	help_short();
 	puts("Compile, build & link mocha source code.\n");
-	printf(
-	    "  -c                    only compile, do not link\n"
-	    "  --color[=never]       use colors in the output\n"
-	    "  -h, --help[=topic]    show a help page and exit\n"
-	    "  --helpdir <dir>       directory containing help pages\n"
-	    "  -o, --output <path>   output file\n"
-	    "  --ldd <path>          dynamic linker to use\n"
-	    "  -s, --shared          link into a shared object\n"
-	    "  -V, --verbose         be more verbose\n"
-	    "  -v, --version         output the compiler version and exit\n");
+	printf("  -c                    only compile, do not link\n"
+	       "  --color[=never]       use colors in the output\n"
+	       "  -h, --help[=topic]    show a help page and exit\n"
+	       "  --helpdir <dir>       directory containing help pages\n"
+	       "  -o, --output <path>   output file\n"
+	       "  --ldd <path>          dynamic linker to use\n"
+	       "  -s, --shared          link into a shared object\n"
+	       "  -V, --verbose         be more verbose\n"
+	       "  -v, --version         output the compiler version and exit\n"
+	       "  -Xtree                dump the parsed AST\n");
 }
 
 static struct strlist find_topics()

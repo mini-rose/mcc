@@ -16,6 +16,9 @@ struct settings
 	bool to_object;
 	bool to_shared;
 
+	/* extra settings */
+	bool x_tree;
+
 	/* link settings */
 	char *ldd;
 };
