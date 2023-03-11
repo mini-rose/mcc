@@ -2,7 +2,9 @@
    Copyright (c) 2023 bellrise */
 
 #include <ctype.h>
+#include <errno.h>
 #include <mcc/alloc.h>
+#include <mcc/errmsg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -58,10 +60,41 @@ struct sanitizer_info sanitizer_info;
 struct alloc_table global_alloc;
 struct array_table global_arrays;
 
+static void *slab_malloc(size_t size)
+{
+	void *block = malloc(size);
+
+	if (block == NULL)
+		errmsg(strerror(errno));
+
+	return block;
+}
+
+static void *slab_calloc(size_t nmemb, size_t size)
+{
+	void *block = calloc(nmemb, size);
+
+	if (block == NULL)
+		errmsg(strerror(errno));
+
+	return block;
+}
+
+static void *slab_realloc(void *ptr, size_t size)
+{
+	void *block = realloc(ptr, size);
+
+	if (block == NULL)
+		errmsg(strerror(errno));
+
+	return block;
+}
+
 void slab_init_global(bool sanitize)
 {
 	global_slabs.n_slabs = 6;
-	global_slabs.slabs = calloc(global_slabs.n_slabs, sizeof(struct slab));
+	global_slabs.slabs =
+	    slab_calloc(global_slabs.n_slabs, sizeof(struct slab));
 
 	slab_create(&global_slabs.slabs[0], 8, sanitize);
 	slab_create(&global_slabs.slabs[1], 16, sanitize);
@@ -100,9 +133,8 @@ void slab_create(struct slab *allocator, int block_size, bool sanitize)
 	memset(allocator, 0, sizeof(*allocator));
 	allocator->block_size = block_size;
 	allocator->blocks_per_slab = SLAB_SIZE / block_size;
-
-	allocator->slabs = calloc(1, sizeof(void *));
-	allocator->slabs[0] = malloc(SLAB_SIZE);
+	allocator->slabs = slab_calloc(1, sizeof(void *));
+	allocator->slabs[0] = slab_malloc(SLAB_SIZE);
 	allocator->n_slabs = 1;
 	allocator->sanitize = sanitize;
 }
@@ -284,9 +316,9 @@ static void *slab_acquire_block(struct slab *self, int requested)
 	int blocks;
 
 	if (self->i_slab == self->n_slabs) {
-		self->slabs =
-		    realloc(self->slabs, sizeof(void *) * (self->n_slabs + 1));
-		self->slabs[self->n_slabs++] = malloc(SLAB_SIZE);
+		self->slabs = slab_realloc(
+		    self->slabs, sizeof(void *) * (self->n_slabs + 1));
+		self->slabs[self->n_slabs++] = slab_malloc(SLAB_SIZE);
 	}
 
 	base_ptr = self->slabs[self->i_slab];
@@ -358,11 +390,12 @@ static void *acquire_oversized_block(int n)
 {
 	void *block;
 
-	block = calloc(1, n);
+	block = slab_calloc(1, n);
 
-	global_alloc.allocs =
-	    realloc(global_alloc.allocs,
-		    sizeof(struct alloc_entry *) * (global_alloc.n_allocs + 1));
+	global_alloc.allocs = slab_realloc(global_alloc.allocs,
+					   sizeof(struct alloc_entry *)
+					       * (global_alloc.n_allocs + 1));
+
 	global_alloc.allocs[global_alloc.n_allocs] =
 	    slab_alloc(sizeof(struct alloc_entry));
 	global_alloc.allocs[global_alloc.n_allocs]->block = block;
@@ -398,10 +431,11 @@ void *slab_alloc_info(int n, const char *file, const char *func, int line)
 
 	block = slab_alloc_simple(n);
 
-	alloc = calloc(1, sizeof(*alloc));
-	sanitizer_info.allocs = realloc(sanitizer_info.allocs,
-					(sanitizer_info.n_allocs + 1)
-					    * sizeof(struct sanitizer_alloc *));
+	alloc = slab_calloc(1, sizeof(*alloc));
+
+	sanitizer_info.allocs = slab_realloc(
+	    sanitizer_info.allocs,
+	    (sanitizer_info.n_allocs + 1) * sizeof(struct sanitizer_alloc *));
 	sanitizer_info.allocs[sanitizer_info.n_allocs++] = alloc;
 
 	alloc->requested = n;
@@ -441,11 +475,12 @@ static void *array_create(int n)
 	arr = slab_alloc(sizeof(*arr));
 
 	global_arrays.arrays =
-	    realloc(global_arrays.arrays,
-		    (global_arrays.n_arrays + 1) * sizeof(struct array *));
+	    slab_realloc(global_arrays.arrays,
+			 (global_arrays.n_arrays + 1) * sizeof(struct array *));
+
 	global_arrays.arrays[global_arrays.n_arrays++] = arr;
 
-	arr->items = calloc(n, sizeof(void *));
+	arr->items = slab_calloc(n, sizeof(void *));
 	arr->n_items = n;
 
 	return arr->items;
@@ -470,7 +505,7 @@ void *realloc_ptr_array(void *array, int n)
 
 	/* Re-allocate the array */
 	self = array_find(array);
-	self->items = realloc(self->items, n * sizeof(void *));
+	self->items = slab_realloc(self->items, n * sizeof(void *));
 	self->n_items = n;
 
 	return self->items;

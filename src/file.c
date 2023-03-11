@@ -1,8 +1,10 @@
 /* file.c
    Copyright (c) 2023 bellrise */
 
+#include <errno.h>
 #include <fcntl.h>
 #include <mcc/alloc.h>
+#include <mcc/errmsg.h>
 #include <mcc/file.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,8 +19,11 @@ struct file *file_map(const char *path)
 	int fd;
 
 	f = slab_alloc(sizeof(*f));
-
 	fd = open(path, O_RDONLY);
+
+	if (fd == -1)
+		return NULL;
+
 	if (fstat(fd, &info) == -1)
 		return NULL;
 
@@ -34,5 +39,6 @@ struct file *file_map(const char *path)
 
 void file_unmap(struct file *fil)
 {
-	munmap(fil->source, fil->len);
+	if (munmap(fil->source, fil->len) == -1)
+		errmsg(strerror(errno));
 }
