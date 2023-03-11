@@ -25,6 +25,13 @@ const char *color_warn()
 	return "";
 }
 
+const char *color_grey()
+{
+	if (settings_global()->use_colors)
+		return "\033[90m";
+	return "";
+}
+
 const char *color_bold_white()
 {
 	if (settings_global()->use_colors)

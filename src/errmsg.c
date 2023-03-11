@@ -117,14 +117,21 @@ void errsrc_v(struct file *source, struct token *tok, const char *fmt,
 
 	/* Print the source, highlighting the error part */
 	offset = fprintf(stderr, "% 4d", line);
-	fprintf(stderr, " | %.*s%s%.*s%s%.*s\n", (int) (tok->val - start),
-		start, color_err(), (int) (tok->len), tok->val, color_end(),
-		(int) (end - (tok->val + tok->len)), tok->val + tok->len);
+
+	if (tok->type == T_NEWLINE) {
+		fprintf(stderr, " | %s(newline)%s\n", color_grey(),
+			color_end());
+	} else {
+		fprintf(
+		    stderr, " | %.*s%s%.*s%s%.*s\n", (int) (tok->val - start),
+		    start, color_err(), (int) (tok->len), tok->val, color_end(),
+		    (int) (end - (tok->val + tok->len)), tok->val + tok->len);
+	}
 
 	for (int i = 0; i < offset; i++)
 		fputc(' ', stderr);
 
-	offset = tok->val - start;
+	offset = tok->val - start - tabs;
 	fprintf(stderr, " | %s", color_err());
 
 	for (int i = 0; i < tabs; i++)
@@ -137,6 +144,5 @@ void errsrc_v(struct file *source, struct token *tok, const char *fmt,
 		fputc('~', stderr);
 
 	fprintf(stderr, "%s\n", color_end());
-
 	exit(1);
 }

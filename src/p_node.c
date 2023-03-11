@@ -4,6 +4,7 @@
 #include <mcc/alloc.h>
 #include <mcc/parser.h>
 #include <stdio.h>
+#include <string.h>
 
 struct node *p_node_create(struct node *parent)
 {
@@ -37,9 +38,25 @@ struct node *p_node_add_next(struct node *after)
 	return (walker->next = p_node_create(after->parent));
 }
 
-static const char *node_names[] = {
-    "<node>", "module", "fn-decl", "fn-def", "use",
-};
+struct p_var *p_node_local(struct node *node, char *name)
+{
+	for (int i = 0; i < node->n_locals; i++) {
+		if (!strcmp(node->locals[i]->name, name))
+			return node->locals[i];
+	}
+
+	return NULL;
+}
+
+struct p_var *p_node_add_local(struct node *node)
+{
+	node->locals = realloc_ptr_array(node->locals, node->n_locals + 1);
+	return (node->locals[node->n_locals++] =
+		    slab_alloc(sizeof(struct p_var)));
+}
+
+static const char *node_names[] = {"<node>", "module", "fn-decl",
+				   "fn-def", "use",    "var-decl"};
 
 static void print_fn_sig(struct p_fn_decl *fn)
 {
@@ -88,6 +105,9 @@ static void p_node_dump_level(struct node *node, int level)
 		break;
 	case NODE_FN_DEF:
 		printf("for `%s`", node->fn_def->decl->name);
+		break;
+	case NODE_VAR_DECL:
+		printf("`%s`: %s", node->var->name, type_str(&node->var->type));
 		break;
 	default:
 		break;

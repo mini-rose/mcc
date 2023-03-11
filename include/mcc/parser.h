@@ -13,6 +13,7 @@ enum node_kind
 	NODE_FN_DECL,
 	NODE_FN_DEF,
 	NODE_USE,
+	NODE_VAR_DECL,
 };
 
 struct module
@@ -24,6 +25,7 @@ struct module
 struct p_type_decl;
 struct p_fn_decl;
 struct p_fn_def;
+struct p_var;
 
 /*
  * Represents a single node in the abstract syntax tree, which can have a child
@@ -40,7 +42,11 @@ struct node
 		struct p_fn_decl *fn_decl;
 		struct p_fn_def *fn_def;
 		struct module *module;
+		struct p_var *var;
 	};
+
+	struct p_var **locals;
+	int n_locals;
 };
 
 /* Parse the token list into an abstract syntax tree. */
@@ -97,12 +103,15 @@ void p_parse_fn_def(struct p_context *p, struct p_fn_decl *decl);
 void p_parse_use(struct p_context *p);
 void p_parse_block(struct p_context *p, struct node *block);
 void p_parse_type(struct p_context *p, struct type *ty);
+void p_parse_statement(struct p_context *p);
 
 /* utils */
 void p_err(struct p_context *p, const char *fmt, ...);
 void p_skip_block(struct p_context *p);
 struct token *p_cur_tok(struct p_context *p);
 struct token *p_next_tok(struct p_context *p);
+struct token *p_after_tok(struct p_context *p, struct token *from);
+struct token *p_before_tok(struct p_context *p, struct token *from);
 void p_set_pos_tok(struct p_context *p, struct token *at);
 
 /* module */
@@ -112,4 +121,6 @@ struct module *p_module_create();
 struct node *p_node_create(struct node *parent);
 struct node *p_node_add_child(struct node *inside);
 struct node *p_node_add_next(struct node *after);
+struct p_var *p_node_add_local(struct node *node);
+struct p_var *p_node_local(struct node *node, char *name);
 void p_node_dump(struct node *node);

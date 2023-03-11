@@ -5,6 +5,8 @@
 #include <mcc/parser.h>
 #include <stdarg.h>
 
+static struct token end_tok = {.len = 0, .val = "", .type = T_END};
+
 void p_err(struct p_context *p, const char *fmt, ...)
 {
 	va_list args;
@@ -22,11 +24,29 @@ struct token *p_cur_tok(struct p_context *p)
 
 struct token *p_next_tok(struct p_context *p)
 {
-	static struct token end_tok = {.len = 0, .val = "", .type = T_END};
-
 	if (p->tokens->iter >= p->tokens->len)
 		return &end_tok;
 	return p->tokens->tokens[p->tokens->iter++];
+}
+
+struct token *p_after_tok(struct p_context *p, struct token *from)
+{
+	for (int i = 0; i < p->tokens->len - 1; i++) {
+		if (p->tokens->tokens[i] == from)
+			return p->tokens->tokens[i + 1];
+	}
+
+	return &end_tok;
+}
+
+struct token *p_before_tok(struct p_context *p, struct token *from)
+{
+	for (int i = 1; i < p->tokens->len; i++) {
+		if (p->tokens->tokens[i] == from)
+			return p->tokens->tokens[i - 1];
+	}
+
+	return &end_tok;
 }
 
 void p_set_pos_tok(struct p_context *p, struct token *at)

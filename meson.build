@@ -17,6 +17,7 @@ sources = [
   'src/p_fn.c',
   'src/p_module.c',
   'src/p_node.c',
+  'src/p_statement.c',
   'src/p_type.c',
   'src/p_use.c',
   'src/p_utils.c',

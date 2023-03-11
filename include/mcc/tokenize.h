@@ -68,3 +68,4 @@ struct token_list
 
 struct token_list *tokenize(struct file *source);
 void token_list_dump(struct token_list *tokens);
+const char *token_name(struct token *tok);

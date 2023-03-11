@@ -376,18 +376,23 @@ static const struct token_name toknames[] = {
 
 static const int n_toknames = sizeof(toknames) / sizeof(*toknames);
 
+const char *token_name(struct token *tok)
+{
+	for (int j = 0; j < n_toknames; j++) {
+		if (tok->type == toknames[j].type) {
+			return toknames[j].name;
+		}
+	}
+
+	return "<token>";
+}
+
 void token_list_dump(struct token_list *tokens)
 {
 	const char *name = "token";
 
 	for (int i = 0; i < tokens->len; i++) {
-		for (int j = 0; j < n_toknames; j++) {
-			if (tokens->tokens[i]->type == toknames[j].type) {
-				name = toknames[j].name;
-				break;
-			}
-		}
-
+		name = token_name(tokens->tokens[i]);
 		infomsg("%s `%.*s`", name, tokens->tokens[i]->len,
 			tokens->tokens[i]->val);
 	}
