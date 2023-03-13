@@ -147,6 +147,8 @@ static void extra_opt(const char *opt)
 
 	if (!strcmp(opt, "tree"))
 		s->x_tree = true;
+	else if (!strcmp(opt, "alloc-stat"))
+		s->x_alloc_stat = true;
 }
 
 static void version()

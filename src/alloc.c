@@ -1,4 +1,4 @@
-/* alloc.c
+/* alloc.c - Allocation routines
    Copyright (c) 2023 bellrise */
 
 #include <ctype.h>
@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
 
 struct alloc_entry
 {
@@ -60,7 +61,7 @@ struct sanitizer_info sanitizer_info;
 struct alloc_table global_alloc;
 struct array_table global_arrays;
 
-static void *slab_malloc(size_t size)
+static void *safe_malloc(size_t size)
 {
 	void *block = malloc(size);
 
@@ -70,7 +71,7 @@ static void *slab_malloc(size_t size)
 	return block;
 }
 
-static void *slab_calloc(size_t nmemb, size_t size)
+static void *safe_calloc(size_t nmemb, size_t size)
 {
 	void *block = calloc(nmemb, size);
 
@@ -80,7 +81,7 @@ static void *slab_calloc(size_t nmemb, size_t size)
 	return block;
 }
 
-static void *slab_realloc(void *ptr, size_t size)
+static void *safe_realloc(void *ptr, size_t size)
 {
 	void *block = realloc(ptr, size);
 
@@ -94,7 +95,7 @@ void slab_init_global(bool sanitize)
 {
 	global_slabs.n_slabs = 6;
 	global_slabs.slabs =
-	    slab_calloc(global_slabs.n_slabs, sizeof(struct slab));
+	    safe_calloc(global_slabs.n_slabs, sizeof(struct slab));
 
 	slab_create(&global_slabs.slabs[0], 8, sanitize);
 	slab_create(&global_slabs.slabs[1], 16, sanitize);
@@ -132,20 +133,18 @@ void slab_create(struct slab *allocator, int block_size, bool sanitize)
 {
 	memset(allocator, 0, sizeof(*allocator));
 	allocator->block_size = block_size;
-	allocator->blocks_per_slab = SLAB_SIZE / block_size;
-	allocator->slabs = slab_calloc(1, sizeof(void *));
-	allocator->slabs[0] = slab_malloc(SLAB_SIZE);
-	allocator->n_slabs = 1;
+	allocator->blocks_per_slab = SLAB_REGION_SIZE / block_size;
+	allocator->regions = safe_calloc(1, sizeof(void *));
+	allocator->regions[0] = safe_malloc(SLAB_REGION_SIZE);
+	allocator->n_regions = 1;
 	allocator->sanitize = sanitize;
 }
 
 void slab_destroy(struct slab *allocator)
 {
-	for (int i = 0; i < allocator->n_slabs; i++)
-		free(allocator->slabs[i]);
-	free(allocator->slabs);
-
-	memset(allocator, 0, sizeof(*allocator));
+	for (int i = 0; i < allocator->n_regions; i++)
+		free(allocator->regions[i]);
+	free(allocator->regions);
 }
 
 static struct sanitizer_alloc *sanitizer_get_alloc_details(void *block)
@@ -168,7 +167,7 @@ static void sanitizer_buffer_error(struct slab *allocator, const char *problem,
 	       "allocator\n",
 	       problem, allocator->block_size, i_slab, i_pos);
 
-	base = allocator->slabs[i_slab] + (allocator->block_size * i_pos);
+	base = allocator->regions[i_slab] + (allocator->block_size * i_pos);
 
 	printf(
 	    "alloc:   addressable range of \e[92m%d\e[0m bytes from %p to %p\n",
@@ -265,8 +264,8 @@ void slab_sanitize(struct slab *allocator)
 	 * before and after the user block for changed bytes.
 	 */
 
-	for (int i_slab = 0; i_slab < allocator->n_slabs; i_slab++) {
-		base_ptr = allocator->slabs[i_slab];
+	for (int i_slab = 0; i_slab < allocator->n_regions; i_slab++) {
+		base_ptr = allocator->regions[i_slab];
 		blocks_to_check = allocator->blocks_per_slab;
 
 		/* If we're at the last block, limit the amount of blocks to
@@ -309,19 +308,26 @@ void slab_sanitize(struct slab *allocator)
 	}
 }
 
+static void *mmap_region(size_t size)
+{
+	return mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON,
+		    -1, 0);
+}
+
 static void *slab_acquire_block(struct slab *self, int requested)
 {
 	void *base_ptr;
 	void *block_ptr;
 	int blocks;
 
-	if (self->i_slab == self->n_slabs) {
-		self->slabs = slab_realloc(
-		    self->slabs, sizeof(void *) * (self->n_slabs + 1));
-		self->slabs[self->n_slabs++] = slab_malloc(SLAB_SIZE);
+	if (self->i_slab == self->n_regions) {
+		self->regions = safe_realloc(
+		    self->regions, sizeof(void *) * (self->n_regions + 1));
+		self->regions[self->n_regions++] =
+		    mmap_region(SLAB_REGION_SIZE);
 	}
 
-	base_ptr = self->slabs[self->i_slab];
+	base_ptr = self->regions[self->i_slab];
 	block_ptr = base_ptr + (self->block_size * self->i_pos);
 
 	self->i_pos++;
@@ -390,9 +396,9 @@ static void *acquire_oversized_block(int n)
 {
 	void *block;
 
-	block = slab_calloc(1, n);
+	block = safe_calloc(1, n);
 
-	global_alloc.allocs = slab_realloc(global_alloc.allocs,
+	global_alloc.allocs = safe_realloc(global_alloc.allocs,
 					   sizeof(struct alloc_entry *)
 					       * (global_alloc.n_allocs + 1));
 
@@ -431,9 +437,9 @@ void *slab_alloc_info(int n, const char *file, const char *func, int line)
 
 	block = slab_alloc_simple(n);
 
-	alloc = slab_calloc(1, sizeof(*alloc));
+	alloc = safe_calloc(1, sizeof(*alloc));
 
-	sanitizer_info.allocs = slab_realloc(
+	sanitizer_info.allocs = safe_realloc(
 	    sanitizer_info.allocs,
 	    (sanitizer_info.n_allocs + 1) * sizeof(struct sanitizer_alloc *));
 	sanitizer_info.allocs[sanitizer_info.n_allocs++] = alloc;
@@ -475,12 +481,12 @@ static void *array_create(int n)
 	arr = slab_alloc(sizeof(*arr));
 
 	global_arrays.arrays =
-	    slab_realloc(global_arrays.arrays,
+	    safe_realloc(global_arrays.arrays,
 			 (global_arrays.n_arrays + 1) * sizeof(struct array *));
 
 	global_arrays.arrays[global_arrays.n_arrays++] = arr;
 
-	arr->items = slab_calloc(n, sizeof(void *));
+	arr->items = safe_calloc(n, sizeof(void *));
 	arr->n_items = n;
 
 	return arr->items;
@@ -505,7 +511,7 @@ void *realloc_ptr_array(void *array, int n)
 
 	/* Re-allocate the array */
 	self = array_find(array);
-	self->items = slab_realloc(self->items, n * sizeof(void *));
+	self->items = safe_realloc(self->items, n * sizeof(void *));
 	self->n_items = n;
 
 	return self->items;
@@ -519,13 +525,19 @@ static int slab_dump(struct slab *self)
 	int total;
 
 	blocks = self->i_slab * self->blocks_per_slab + self->i_pos;
-	used = (float) blocks / (self->n_slabs * self->blocks_per_slab) * 100;
-	total = (self->n_slabs * SLAB_SIZE) / 1024;
-	padding =
-	    ((float) self->unused_padding / (blocks * self->block_size)) * 100;
+	used = (float) blocks / (self->n_regions * self->blocks_per_slab) * 100;
+	total = (self->n_regions * SLAB_REGION_SIZE) / 1024;
 
-	printf("alloc: % 10d % 10d % 8d % 5.0f%% % 5.0f%% % 6.0f % 6d KB\n",
-	       self->block_size, self->n_slabs, blocks, used, padding,
+	if (blocks) {
+		padding =
+		    ((float) self->unused_padding / (blocks * self->block_size))
+		    * 100;
+	} else {
+		padding = 0;
+	}
+
+	printf("alloc: % 10d % 8d % 8d % 5.0f%% % 5.0f%% % 6.0f % 6d KB\n",
+	       self->block_size, self->n_regions, blocks, used, padding,
 	       self->average_block, total);
 
 	return total;
@@ -537,15 +549,16 @@ void alloc_dump_stats()
 	int total_ptrs = 0;
 
 	printf("alloc: Slab allocators:\n");
-	printf("alloc:   slab size: %d (%d KB)\n", SLAB_SIZE, SLAB_SIZE / 1024);
+	printf("alloc:   region size: %d (%d kB)\n", SLAB_REGION_SIZE,
+	       SLAB_REGION_SIZE / 1024);
 	printf("alloc:   allocators in use: %d\n", global_slabs.n_slabs);
-	printf("alloc:\nalloc: %10s %10s %8s %6s %6s %6s %9s\n", "block-size",
-	       "slabs-used", "blocks", "used", "pad", "avg", "total");
+	printf("alloc:\nalloc: %10s %8s %8s %6s %6s %6s %9s\n", "block-size",
+	       "regions", "blocks", "used", "pad", "avg", "total");
 
 	for (int i = 0; i < global_slabs.n_slabs; i++)
 		total += slab_dump(&global_slabs.slabs[i]);
 
-	printf("alloc:\nalloc: % 58d KB\n", total);
+	printf("alloc:\nalloc: % 56d KB\n", total);
 
 	printf("alloc:\nalloc: Oversized allocations:\n");
 	printf("alloc: %d instance(s)\n", global_alloc.n_allocs);

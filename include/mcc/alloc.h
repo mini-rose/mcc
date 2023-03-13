@@ -6,8 +6,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-/* 16KB slabs */
-#define SLAB_SIZE 0x4000
+/* 16KB regions */
+#define SLAB_REGION_SIZE 0x4000
 
 #define SLAB_MAGIC 0xee, 0x55
 
@@ -19,8 +19,8 @@ struct slab
 	float average_block;
 	int i_slab;
 	int i_pos;
-	void **slabs;
-	int n_slabs;
+	void **regions;
+	int n_regions;
 	bool sanitize;
 };
 

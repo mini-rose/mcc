@@ -20,6 +20,7 @@ struct settings
 
 	/* extra settings */
 	bool x_tree;
+	bool x_alloc_stat;
 
 	/* link settings */
 	char *ldd;

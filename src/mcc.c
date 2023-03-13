@@ -1,4 +1,4 @@
-/* mcc.c
+/* mcc.c - mocha compiler
    Copyright (c) 2023 bellrise */
 
 #include <mcc/alloc.h>
@@ -15,5 +15,7 @@ int main(int argc, char **argv)
 	args_parse(argc, argv);
 	mcc_run();
 
+	if (settings_global()->x_alloc_stat)
+		alloc_dump_stats();
 	slab_deinit_global();
 }

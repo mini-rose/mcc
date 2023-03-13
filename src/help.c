@@ -29,6 +29,7 @@ void help()
 	       "  -s, --shared          link into a shared object\n"
 	       "  -V, --verbose         be more verbose\n"
 	       "  -v, --version         output the compiler version and exit\n"
+	       "  -Xalloc-stat          dump allocation stats\n"
 	       "  -Xtree                dump the parsed AST\n");
 }
 
