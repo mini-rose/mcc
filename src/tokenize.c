@@ -238,7 +238,8 @@ struct token_list *tokenize(struct file *source)
 			    [T_ADDA] = "+=", [T_ARROW] = "->", [T_DEC] = "--",
 			    [T_INC] = "++",  [T_SUBA] = "-=",  [T_ADD] = "+",
 			    [T_DIV] = "/",   [T_MOD] = "%",    [T_DIVA] = "/=",
-			    [T_MODA] = "%=", [T_MUL] = "*",    [T_SUB] = "-"};
+			    [T_MODA] = "%=", [T_MULA] = "*=",  [T_MUL] = "*",
+			    [T_SUB] = "-"};
 			static size_t n_operators =
 			    sizeof(operators) / sizeof(*operators);
 
@@ -371,8 +372,8 @@ static const struct token_name toknames[] = {
     {T_ASS, "assign"},        {T_ADD, "add"},        {T_ADDA, "addassign"},
     {T_ARROW, "arrow"},       {T_DEC, "decrement"},  {T_INC, "increment"},
     {T_SUBA, "subassign"},    {T_DIV, "divide"},     {T_MOD, "modulo"},
-    {T_DIVA, "divassign"},    {T_MODA, "modassign"}, {T_MUL, "multiply"},
-    {T_SUB, "subtract"},      {T_AND, "addr"}};
+    {T_DIVA, "divassign"},    {T_MODA, "modassign"}, {T_MULA, "mulassign"},
+    {T_MUL, "multiply"},      {T_SUB, "subtract"},   {T_AND, "addr"}};
 
 static const int n_toknames = sizeof(toknames) / sizeof(*toknames);
 

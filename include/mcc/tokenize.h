@@ -46,6 +46,7 @@ enum token_type
 	T_MOD,   // %
 	T_DIVA,  // /=
 	T_MODA,  // %=
+	T_MULA,  // *=
 	T_MUL,   // *
 	T_SUB,   // -
 	T_AND,   // &

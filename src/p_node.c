@@ -55,8 +55,8 @@ struct p_var *p_node_add_local(struct node *node)
 		    slab_alloc(sizeof(struct p_var)));
 }
 
-static const char *node_names[] = {"<node>", "module", "fn-decl",
-				   "fn-def", "use",    "var-decl"};
+static const char *node_names[] = {"<node>", "module",   "fn-decl", "fn-def",
+				   "use",    "var-decl", "assign"};
 
 static void print_fn_sig(struct p_fn_decl *fn)
 {
@@ -88,6 +88,78 @@ static void print_fn_sig(struct p_fn_decl *fn)
 		printf(" -> %s", type_str(fn->return_type));
 }
 
+static void print_lvalue(struct p_lvalue *lvalue, int level);
+
+static void print_rvalue(struct p_rvalue *rvalue, int level)
+{
+	for (int i = 0; i < (level * 2); i++)
+		fputc(' ', stdout);
+
+	printf("rvalue: ");
+	switch (rvalue->kind) {
+	case RVAL_LVAL:
+		printf("lvalue\n");
+		print_lvalue(rvalue->v_lval, level + 1);
+		break;
+	case RVAL_NUM:
+		printf("number: %ld\n", rvalue->v_num);
+		break;
+	case RVAL_STR:
+		printf("string: %s\n", rvalue->v_str);
+		break;
+	default:
+		printf("\n");
+		break;
+	}
+}
+
+static void print_lvalue(struct p_lvalue *lvalue, int level)
+{
+	for (int i = 0; i < (level * 2); i++)
+		fputc(' ', stdout);
+
+	printf("lvalue: ");
+	switch (lvalue->kind) {
+	case LVAL_VAR:
+		printf("var `%s`\n", lvalue->v_var->name);
+		break;
+	case LVAL_FIELD:
+		printf("field `%s.%s`\n", lvalue->v_var->name, lvalue->v_field);
+		break;
+	case LVAL_INDEX:
+		printf("index `%s`[rvalue]\n", lvalue->v_var->name);
+		print_rvalue(lvalue->v_index, level + 1);
+		break;
+	case LVAL_ADDR:
+		printf("addr\n");
+		print_lvalue(lvalue->v_addr, level + 1);
+		break;
+	default:
+		printf("\n");
+		break;
+	}
+}
+
+static const char *assign_op_str(enum p_assign_kind kind)
+{
+	switch (kind) {
+	case PA_SET:
+		return "=";
+	case PA_ADD:
+		return "+=";
+	case PA_SUB:
+		return "-=";
+	case PA_MUL:
+		return "*=";
+	case PA_DIV:
+		return "/=";
+	case PA_MOD:
+		return "%=";
+	}
+
+	return "=";
+}
+
 static void p_node_dump_level(struct node *node, int level)
 {
 	for (int i = 0; i < (level * 2); i++)
@@ -98,22 +170,28 @@ static void p_node_dump_level(struct node *node, int level)
 	/* Additional info */
 	switch (node->kind) {
 	case NODE_MODULE:
-		printf("src=`%s`", node->module->source->path);
+		printf("src=`%s`\n", node->module->source->path);
 		break;
 	case NODE_FN_DECL:
 		print_fn_sig(node->fn_decl);
+		fputc('\n', stdout);
 		break;
 	case NODE_FN_DEF:
-		printf("for `%s`", node->fn_def->decl->name);
+		printf("for `%s`\n", node->fn_def->decl->name);
 		break;
 	case NODE_VAR_DECL:
-		printf("`%s`: %s", node->var->name, type_str(&node->var->type));
+		printf("`%s`: %s\n", node->var->name,
+		       type_str(&node->var->type));
+		break;
+	case NODE_ASSIGN:
+		printf("L %s R\n", assign_op_str(node->assign->kind));
+		print_lvalue(node->assign->assignee, level + 1);
+		print_rvalue(node->assign->value, level + 1);
 		break;
 	default:
+		fputc('\n', stdout);
 		break;
 	}
-
-	fputc('\n', stdout);
 
 	if (node->child)
 		p_node_dump_level(node->child, level + 1);
