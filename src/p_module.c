@@ -48,7 +48,7 @@ void p_parse_module(struct p_context *p)
 	 */
 
 	struct node *nod = p->module->ast->child;
-	while (nod && nod->next) {
+	while (nod) {
 		if (nod->kind == NODE_FN_DECL)
 			p_parse_fn_def(p, nod->fn_decl);
 		nod = nod->next;
