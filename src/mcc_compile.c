@@ -1,6 +1,7 @@
 /* mcc_compile.c
    Copyright (c) 2023 bellrise */
 
+#include <mcc/emit.h>
 #include <mcc/errmsg.h>
 #include <mcc/file.h>
 #include <mcc/mcc.h>
@@ -14,6 +15,7 @@
 
 int mcc_compile(const char *input, const char *output)
 {
+	const struct emit_target *emitter;
 	struct token_list *tokens;
 	struct module *module;
 	struct file *fil;
@@ -29,6 +31,15 @@ int mcc_compile(const char *input, const char *output)
 
 	if (settings_global()->x_tree)
 		p_node_dump(module->ast);
+
+	/* Select the proper emitter. */
+	emitter = emit_for_target(settings_global()->target);
+	if (!emitter) {
+		errmsg("invalid target `%s`, try `--target list`",
+		       settings_global()->target);
+	}
+
+	emitter->fn(module);
 
 	file_unmap(fil);
 	return 0;

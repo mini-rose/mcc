@@ -11,6 +11,7 @@ void settings_defaults()
 	struct settings *s = settings_global();
 
 	memset(s, 0, sizeof(*s));
+	s->target = "llvm";
 	s->use_colors = true;
 	s->ldd = MCC_LDD;
 	s->cc = MCC_CC;

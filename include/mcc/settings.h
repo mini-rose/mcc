@@ -18,6 +18,9 @@ struct settings
 	bool to_object;
 	bool to_shared;
 
+	/* emit settings */
+	char *target;
+
 	/* extra settings */
 	bool x_tree;
 	bool x_alloc_stat;

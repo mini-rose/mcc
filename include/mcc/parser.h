@@ -222,4 +222,5 @@ struct node *p_node_add_child(struct node *inside);
 struct node *p_node_add_next(struct node *after);
 struct p_var *p_node_add_local(struct node *node);
 struct p_var *p_node_local(struct node *node, char *name);
+const char *p_node_name(enum node_kind kind);
 void p_node_dump(struct node *node);

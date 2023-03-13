@@ -27,6 +27,11 @@ bool path_is_object_file(const char *path)
 
 char *path_tmp_object(const char *tip)
 {
+	return path_tmp(tip, "o");
+}
+
+char *path_tmp(const char *tip, const char *suffix)
+{
 	char *p = slab_alloc(PATH_MAX);
 	char *base = slab_strdup(tip);
 	int iter = 0;
@@ -38,8 +43,8 @@ char *path_tmp_object(const char *tip)
 	 */
 
 	while (1) {
-		snprintf(p, PATH_MAX, "/tmp/mcc.%s.%d.o", basename(base),
-			 iter++);
+		snprintf(p, PATH_MAX, "/tmp/mcc.%s.%d.%s", basename(base),
+			 iter++, suffix);
 		if (access(p, F_OK))
 			break;
 	}

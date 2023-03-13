@@ -30,6 +30,7 @@ struct type_object
 {
 	struct type_object_field **fields;
 	int n_fields;
+	char *name;
 	struct token *place;
 };
 

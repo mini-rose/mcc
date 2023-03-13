@@ -57,6 +57,14 @@ struct p_var *p_node_add_local(struct node *node)
 
 static const char *node_names[] = {"<node>", "module",   "fn-decl", "fn-def",
 				   "use",    "var-decl", "assign"};
+static const int n_node_names = sizeof(node_names) / sizeof(*node_names);
+
+const char *p_node_name(enum node_kind kind)
+{
+	if ((int) kind >= n_node_names)
+		kind = NODE_INV;
+	return node_names[kind];
+}
 
 static void print_fn_sig(struct p_fn_decl *fn)
 {

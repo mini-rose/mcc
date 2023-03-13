@@ -4,6 +4,7 @@
 #include <getopt.h>
 #include <mcc/alloc.h>
 #include <mcc/args.h>
+#include <mcc/emit.h>
 #include <mcc/errmsg.h>
 #include <mcc/help.h>
 #include <mcc/mcc.h>
@@ -14,6 +15,7 @@
 
 static void long_opt(const char *opt, const char *value);
 static void extra_opt(const char *opt);
+static void list_targets();
 static void version();
 
 void args_parse(int argc, char **argv)
@@ -31,6 +33,7 @@ void args_parse(int argc, char **argv)
 	    {"ld", required_argument, 0, 0},
 	    {"ldd", required_argument, 0, 0},
 	    {"shared", no_argument, 0, 's'},
+	    {"target", required_argument, 0, 't'},
 	    {"verbose", no_argument, 0, 'V'},
 	    {"version", no_argument, 0, 'v'},
 	    {0, 0, 0, 0}};
@@ -44,7 +47,8 @@ void args_parse(int argc, char **argv)
 	}
 
 	while (1) {
-		c = getopt_long(argc, argv, "cho:sVvX:", long_opts, &opt_index);
+		c = getopt_long(argc, argv, "cho:st:VvX:", long_opts,
+				&opt_index);
 		if (c == -1)
 			break;
 
@@ -64,6 +68,11 @@ void args_parse(int argc, char **argv)
 			break;
 		case 's':
 			settings->to_shared = true;
+			break;
+		case 't':
+			if (!strcmp(optarg, "list"))
+				list_targets();
+			settings->target = slab_strdup(optarg);
 			break;
 		case 'V':
 			settings->verbose = true;
@@ -101,21 +110,10 @@ static void long_opt(const char *opt, const char *value)
 		}
 	}
 
-	if (!strcmp(opt, "help")) {
-		value ? help_topic(value) : help();
-		exit(0);
-	}
-
 	if (!strcmp(opt, "helpdir")) {
 		if (!value)
 			errmsg("missing dirname after --helpdir");
 		s->helpdir = slab_strdup(value);
-	}
-
-	if (!strcmp(opt, "output")) {
-		if (!value)
-			errmsg("missing filename after --output");
-		s->output = slab_strdup(value);
 	}
 
 	if (!strcmp(opt, "ld")) {
@@ -127,17 +125,6 @@ static void long_opt(const char *opt, const char *value)
 		if (!value)
 			errmsg("missing dynamic linker path after --ldd");
 		s->ldd = slab_strdup(value);
-	}
-
-	if (!strcmp(opt, "shared"))
-		s->to_shared = true;
-
-	if (!strcmp(opt, "verbose"))
-		s->verbose = true;
-
-	if (!strcmp(opt, "version")) {
-		version();
-		exit(0);
 	}
 }
 
@@ -154,4 +141,18 @@ static void extra_opt(const char *opt)
 static void version()
 {
 	printf("mcc %d.%d\n", MCC_MAJOR, MCC_MINOR);
+}
+
+static void list_targets()
+{
+	const char **targets;
+	int n;
+
+	targets = emit_target_list(&n);
+
+	printf("Possible targets for `--target <tgt>`:\n");
+	for (int i = 0; i < n; i++)
+		printf("  %s\n", targets[i]);
+
+	exit(0);
 }

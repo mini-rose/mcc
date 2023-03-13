@@ -27,6 +27,7 @@ void help()
 	       "  --ld <bin>            linker to use\n"
 	       "  --ldd <path>          dynamic linker to use\n"
 	       "  -s, --shared          link into a shared object\n"
+	       "  -t, --target <tgt>    emit to the following target\n"
 	       "  -V, --verbose         be more verbose\n"
 	       "  -v, --version         output the compiler version and exit\n"
 	       "  -Xalloc-stat          dump allocation stats\n"
