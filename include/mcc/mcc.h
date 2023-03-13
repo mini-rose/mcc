@@ -4,7 +4,7 @@
 #pragma once
 
 #define MCC_MAJOR 0
-#define MCC_MINOR 11
+#define MCC_MINOR 12
 
 #define MCC_LD  "/usr/bin/ld"
 #define MCC_CC  "/usr/bin/cc"
