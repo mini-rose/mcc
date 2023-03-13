@@ -3,11 +3,49 @@
 
 import docutils.core
 import os
+import re
 
 additional_style = """
 body {
+    background-color: #181825;
+    margin: 0;
+}
+
+.document {
     width: 50%;
+    padding: 20px;
     margin: auto;
+    margin-top: 0;
+    margin-bottom: 0;
+    background-color: #1e1e2e;
+    color: #cdd6f4;
+    box-shadow: 5px 5px 10px #11111b;
+}
+
+.section {
+    margin-top: 2em;
+}
+
+.section h1 {
+    font-family: monospace !important;
+    font-size: 1.5em !important;
+    text-decoration: underline dotted #7f849c;
+}
+
+a {
+    font-family: monospace;
+    color: #89dceb;
+    text-decoration: underline #9399b2;
+}
+
+a:visited {
+    color: #89dceb;
+    text-decoration: underline #9399b2;
+}
+
+a:hover {
+    color: #b4befe;
+    text-decoration: underline dotted #9399b2;
 }
 """
 
@@ -54,6 +92,12 @@ for doc in files:
     tag = '<style type="text/css">'
     html = html.replace(tag, tag + additional_style)
 
+    link_back = '<a href="../index.html">&lt;&lt;&lt; Back</a>'
+
+    found = re.search(r'<h1 class="title">.*</h1>', html)
+    if found:
+        html = html.replace(found.group(0), found.group(0) + link_back)
+
     with open(dest, 'w') as f:
         f.write(html)
 
@@ -69,26 +113,48 @@ index_source = f"""
 
         a {{
             font-family: monospace;
+            color: #89dceb;
+            text-decoration: underline #9399b2;
+        }}
+
+        a:visited {{
+            color: #89dceb;
+            text-decoration: underline #9399b2;
+        }}
+
+        a:hover {{
+            color: #b4befe;
+            text-decoration: underline dotted #9399b2;
         }}
 
         body {{
+            background-color: #181825;
+            margin: 0;
+        }}
+
+        .document {{
             width: 50%;
             margin: auto;
-            margin-top: 20px;
+            padding: 20px;
+            background-color: #1e1e2e;
+            color: #cdd6f4;
+            box-shadow: 5px 5px 10px #11111b;
         }}
 
         </style>
     </head>
-    <h1>mcc</h1>
-    <p>
-        The official mocha compiler documentation.
-    </p>
-    <hr>
-    <p>
-        Here is the list of all generated HTML pages from the .rst files:
-    </p>
     <body>
+    <div class="document">
+        <h1>mcc</h1>
+        <p>
+            The official mocha compiler documentation.
+        </p>
+        <hr>
+        <p>
+            Here is the list of all generated HTML pages from the .rst files:
+        </p>
 {links}
+    </div>
     </body>
 </html>
 """
