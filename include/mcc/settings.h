@@ -17,6 +17,7 @@ struct settings
 	bool use_colors;
 	bool to_object;
 	bool to_shared;
+	bool to_target;
 
 	/* emit settings */
 	char *target;

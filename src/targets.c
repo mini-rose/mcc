@@ -5,10 +5,10 @@
 #include <mcc/emit.h>
 #include <string.h>
 
-int emit_llvm(struct module *mod);
+char *emit_llvm(struct module *mod);
 
 static const struct emit_target targets[] = {
-    {"llvm", emit_llvm},
+    {"llvm", "ll", emit_llvm},
 };
 static const int n_targets = sizeof(targets) / sizeof(*targets);
 

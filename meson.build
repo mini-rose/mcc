@@ -6,6 +6,7 @@ project(
 sources = [
   'src/alloc.c',
   'src/args.c',
+  'src/emit-llvm/block.c',
   'src/emit-llvm/emit.c',
   'src/emit-llvm/fn_decl.c',
   'src/emit-llvm/fn_def.c',

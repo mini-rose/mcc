@@ -1,6 +1,7 @@
 /* mcc_compile.c
    Copyright (c) 2023 bellrise */
 
+#include <mcc/alloc.h>
 #include <mcc/emit.h>
 #include <mcc/errmsg.h>
 #include <mcc/file.h>
@@ -18,7 +19,11 @@ int mcc_compile(const char *input, const char *output)
 	const struct emit_target *emitter;
 	struct token_list *tokens;
 	struct module *module;
+	struct settings *s;
 	struct file *fil;
+	char *emitted;
+
+	s = settings_global();
 
 	infomsg("compile %s -> %s", input, output);
 
@@ -29,19 +34,33 @@ int mcc_compile(const char *input, const char *output)
 	tokens = tokenize(fil);
 	module = mcc_parse(tokens);
 
-	if (settings_global()->x_tree)
+	if (s->x_tree)
 		p_node_dump(module->ast);
 
 	/* Select the proper emitter. */
-	emitter = emit_for_target(settings_global()->target);
+	emitter = emit_for_target(s->target);
 	if (!emitter) {
-		errmsg("invalid target `%s`, try `--target list`",
-		       settings_global()->target);
+		errmsg("invalid target `%s`, try `--target list`", s->target);
 	}
 
-	emitter->fn(module);
+	emitted = emitter->fn(module);
+
+	/* Only compile, do not assemble. */
+	if (s->to_target) {
+		char *outname = s->output;
+		if (!outname) {
+			outname = slab_alloc(32);
+			snprintf(outname, 32, "a.%s", emitter->file_suffix);
+		}
+
+		path_copy(outname, emitted);
+		file_unmap(fil);
+		remove(emitted);
+		exit(0);
+	}
 
 	file_unmap(fil);
+	remove(emitted);
 	return 0;
 }
 

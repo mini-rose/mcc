@@ -26,6 +26,7 @@ void help()
 	       "  -o, --output <path>   output file\n"
 	       "  --ld <bin>            linker to use\n"
 	       "  --ldd <path>          dynamic linker to use\n"
+	       "  -S                    only emit, do not assemble\n"
 	       "  -s, --shared          link into a shared object\n"
 	       "  -t, --target <tgt>    emit to the following target\n"
 	       "  -V, --verbose         be more verbose\n"

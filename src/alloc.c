@@ -547,6 +547,7 @@ void alloc_dump_stats()
 {
 	int total = 0;
 	int total_ptrs = 0;
+	float avg;
 
 	printf("alloc: Slab allocators:\n");
 	printf("alloc:   region size: %d (%d kB)\n", SLAB_REGION_SIZE,
@@ -560,10 +561,14 @@ void alloc_dump_stats()
 
 	printf("alloc:\nalloc: % 56d KB\n", total);
 
-	printf("alloc:\nalloc: Oversized allocations:\n");
-	printf("alloc: %d instance(s)\n", global_alloc.n_allocs);
+	avg = 0;
 	for (int i = 0; i < global_alloc.n_allocs; i++)
-		printf("alloc:   %d B\n", global_alloc.allocs[i]->size);
+		avg += global_alloc.allocs[i]->size;
+	avg /= global_alloc.n_allocs;
+
+	printf("alloc:\nalloc: Oversized allocations:\n");
+	printf("alloc:   %d instance(s), with an average of %.0f B\n",
+	       global_alloc.n_allocs, avg);
 
 	for (int i = 0; i < global_arrays.n_arrays; i++)
 		total_ptrs += global_arrays.arrays[i]->n_items;

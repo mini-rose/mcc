@@ -8,7 +8,8 @@
 struct emit_target
 {
 	const char *id;
-	int (*fn)(struct module *mod);
+	const char *file_suffix;
+	char *(*fn)(struct module *mod);
 };
 
 const char **emit_target_list(int *len);

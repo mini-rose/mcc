@@ -9,7 +9,7 @@
 #include <mcc/settings.h>
 #include <stdlib.h>
 
-int emit_llvm(struct module *module)
+char *emit_llvm(struct module *module)
 {
 	struct e_context e;
 	struct node *node;
@@ -56,5 +56,5 @@ int emit_llvm(struct module *module)
 
 	infomsg("emit to %s", out);
 
-	return 0;
+	return out;
 }

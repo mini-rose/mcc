@@ -47,7 +47,7 @@ void args_parse(int argc, char **argv)
 	}
 
 	while (1) {
-		c = getopt_long(argc, argv, "cho:st:VvX:", long_opts,
+		c = getopt_long(argc, argv, "cho:Sst:VvX:", long_opts,
 				&opt_index);
 		if (c == -1)
 			break;
@@ -65,6 +65,9 @@ void args_parse(int argc, char **argv)
 			break;
 		case 'o':
 			settings->output = slab_strdup(optarg);
+			break;
+		case 'S':
+			settings->to_target = true;
 			break;
 		case 's':
 			settings->to_shared = true;
@@ -90,6 +93,10 @@ void args_parse(int argc, char **argv)
 	while (optind < argc) {
 		strlist_append(&settings->inputs, argv[optind++]);
 	}
+
+	/* Some sanity checks. */
+	if (settings->to_target && settings->inputs.len > 1)
+		errmsg("cannot specifiy -S with multiple files");
 }
 
 static void long_opt(const char *opt, const char *value)
