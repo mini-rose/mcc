@@ -3,4 +3,10 @@
 
 #include "llvm.h"
 
-void e_fn_def(struct e_context *e, struct node *decl) { }
+void e_fn_def(struct e_context *e, struct node *decl)
+{
+	(void) e;
+	(void) decl;
+
+	errmsg("emit for fn-def [target=llvm] is not implemented");
+}
