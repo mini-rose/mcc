@@ -3,10 +3,14 @@
 
 #pragma once
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+#define MCC_MAJOR 0
+#define MCC_MINOR 3
 
 enum token_k
 {
@@ -109,6 +113,7 @@ struct mapped_file
     char *source;
     size_t len;
     int fd;
+    bool is_mmaped;
 };
 
 /**
@@ -118,6 +123,20 @@ struct mapped_file
 struct mapped_file *map_file(const char *path);
 
 /**
+ * Turn the whole stdin into a mapped "file".
+ */
+struct mapped_file *map_stdin();
+
+/**
  * Unmap and free the file.
  */
 void unmap_file(struct mapped_file *file);
+
+struct options
+{
+    char *filename;
+};
+
+struct options *options_parse(int argc, char **argv);
+
+void options_free(struct options *opts);
