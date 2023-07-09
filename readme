@@ -1,0 +1,15 @@
+mcc
+===
+
+Mocha compiler. Used for building & linking mocha programs, but also works for
+regular C code with the use of external compilers like gcc or clang. mcc is
+seperated from the mocha language repository, because it is really a project
+of its own. The goal of mcc is to compile mocha source code, it does not
+provide a user-friendly interface for libraries or joining programs, which
+should be done with a package manager tool.
+
+Use `make && make install` to build & install the compiler. Remember to run the
+install step as root.
+
+If you are an end user of mocha, use the package manager instead. If you know
+what you are doing, see `mcc --help` for more info.
