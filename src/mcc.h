@@ -142,4 +142,14 @@ void options_free(struct options *opts);
 /**
  * Report error at a specific position and exit.
  */
-void err_at(struct mapped_file *file, char *pos, int len, char *fmt, ...);
+void err_at(struct mapped_file *file, char *pos, int len, const char *fmt, ...);
+
+/**
+ * Immediately die and exit the program.
+ */
+void die(const char *fmt, ...);
+
+/**
+ * Dump `len` bytes starting from `addr` to stdout.
+ */
+void dump_bytes(void *addr, int len);
