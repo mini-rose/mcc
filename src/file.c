@@ -20,16 +20,20 @@ struct mapped_file *map_file(const char *path)
         return NULL;
 
     mfile = malloc(sizeof(*mfile));
-    mfile->source = mmap(NULL, stat.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+    mfile->source = mmap(NULL, stat.st_size + 1, PROT_READ | PROT_WRITE,
+                         MAP_PRIVATE, fd, 0);
 
     if (mfile->source == MAP_FAILED) {
         free(mfile);
         return NULL;
     }
 
-    mfile->len = stat.st_size;
+    mfile->len = stat.st_size + 1;
     mfile->path = strdup(path);
     mfile->is_mmaped = true;
+
+    /* As per spec, we have to place an EOF at the end byte. */
+    mfile->source[mfile->len - 1] = EOF;
 
     close(fd);
 
@@ -66,6 +70,14 @@ struct mapped_file *map_stdin()
         bytes_read += block_size;
         mfile->len += block_size;
     } while (1);
+
+    /* We need to stick an additional byte at the end of the buffer, so just
+       allocate a single byte if we happen to be block-aligned. This is rare,
+       so reallocing() for a single byte is OK. */
+    if (mfile->len % block_size)
+        mfile->source = realloc(mfile->source, mfile->len + 1);
+
+    mfile->source[mfile->len++] = EOF;
 
     return mfile;
 }

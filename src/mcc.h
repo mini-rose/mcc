@@ -118,13 +118,11 @@ struct mapped_file
 
 /**
  * Maps the file into memory returning a mapped_file struct, or NULL if
- * something fails.
+ * something fails. Note that mapped files have an EOF char at the end
+ * of the buffer at source[len - 1]. The stdin version will map the whole
+ * stdin into a buffer.
  */
 struct mapped_file *map_file(const char *path);
-
-/**
- * Turn the whole stdin into a mapped "file".
- */
 struct mapped_file *map_stdin();
 
 /**
