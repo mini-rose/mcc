@@ -73,3 +73,9 @@ skip:
 
     return toks;
 }
+
+void token_list_free(struct token_list *tokens)
+{
+    free(tokens->tokens);
+    free(tokens);
+}

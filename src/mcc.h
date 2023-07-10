@@ -53,6 +53,8 @@ struct token_list
  */
 struct token_list *lex(struct mapped_file *file);
 
+void token_list_free(struct token_list *tokens);
+
 /**
  * Anything that can be named as a single object is a node. For example, a
  * function, if statement, variable declaration are all nodes with possible

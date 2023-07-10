@@ -29,4 +29,5 @@ int main(int argc, char **argv)
 
     file_free(source);
     options_free(opts);
+    token_list_free(tokens);
 }

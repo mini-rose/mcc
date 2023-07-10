@@ -45,8 +45,10 @@ struct options *options_parse(int argc, char **argv)
         }
     }
 
-    if (optind < argc)
+    if (optind < argc) {
+        free(opts->filename);
         opts->filename = strdup(argv[optind++]);
+    }
 
     return opts;
 }
@@ -54,6 +56,7 @@ struct options *options_parse(int argc, char **argv)
 void options_free(struct options *opts)
 {
     free(opts->filename);
+    free(opts);
 }
 
 void short_usage()
