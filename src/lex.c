@@ -44,6 +44,8 @@ struct token_list *lex(struct mapped_file *file)
     struct token *tok;
     char *p = file->source;
 
+    toks = calloc(1, sizeof(*toks));
+
     while (*p != EOF) {
         if (isspace(*p))
             goto skip;

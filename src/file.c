@@ -7,7 +7,7 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 
-struct mapped_file *map_file(const char *path)
+struct mapped_file *file_map(const char *path)
 {
     struct mapped_file *mfile;
     struct stat stat;
@@ -40,7 +40,7 @@ struct mapped_file *map_file(const char *path)
     return mfile;
 }
 
-struct mapped_file *map_stdin()
+struct mapped_file *file_from_stdin()
 {
     /* In order to map stdin, we have to continuously allocate enough bytes to
        fit the whole thing, as we have no idea when it ends. */
@@ -82,7 +82,7 @@ struct mapped_file *map_stdin()
     return mfile;
 }
 
-void unmap_file(struct mapped_file *file)
+void file_free(struct mapped_file *file)
 {
     free(file->path);
 
@@ -90,4 +90,6 @@ void unmap_file(struct mapped_file *file)
         munmap(file->source, file->len);
     else
         free(file->source);
+
+    free(file);
 }

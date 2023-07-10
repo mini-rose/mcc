@@ -15,7 +15,7 @@ OUT := build/mcc
 BT  ?= debug
 
 ifeq ($(BT), debug)
-	CFLAGS += -O0 -ggdb -DDEBUG
+	CFLAGS += -O0 -ggdb -DDEBUG -fsanitize=address
 else ifeq ($(BT), release)
 	CFLAGS += -O3 -s
 else

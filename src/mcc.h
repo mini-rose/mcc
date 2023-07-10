@@ -122,13 +122,13 @@ struct mapped_file
  * of the buffer at source[len - 1]. The stdin version will map the whole
  * stdin into a buffer.
  */
-struct mapped_file *map_file(const char *path);
-struct mapped_file *map_stdin();
+struct mapped_file *file_map(const char *path);
+struct mapped_file *file_from_stdin();
 
 /**
  * Unmap and free the file.
  */
-void unmap_file(struct mapped_file *file);
+void file_free(struct mapped_file *file);
 
 struct options
 {
