@@ -23,8 +23,8 @@
 # define IFDEBUG(CODE)
 #endif
 
-#define __unused      __attribute__((unused))
-#define __warn_unused __attribute__((warn_unused_result))
+#define _unused      __attribute__((unused))
+#define _warn_unused __attribute__((warn_unused_result))
 
 enum token_k
 {
@@ -141,7 +141,7 @@ struct node *parse(struct mapped_file *source, struct token_list *);
  * NULL, a new tree is created, otherwise the new node is added as a child to
  * the parent node.
  */
-void *node_create(void *parent, node_k kind) __warn_unused;
+void *node_create(void *parent, node_k kind) _warn_unused;
 
 /**
  * Free this node and all its children. Note, this does _not_ free the next

@@ -4,7 +4,7 @@
 #include "mcc.h"
 
 struct node *parse(struct mapped_file *source,
-                   struct token_list *__unused tokens)
+                   struct token_list *_unused tokens)
 {
     struct node_module *parent_node;
 
