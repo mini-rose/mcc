@@ -140,3 +140,8 @@ struct options
 struct options *options_parse(int argc, char **argv);
 
 void options_free(struct options *opts);
+
+/**
+ * Report error at a specific position and exit.
+ */
+void err_at(struct mapped_file *file, char *pos, int len, char *fmt, ...);

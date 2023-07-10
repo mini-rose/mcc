@@ -3,6 +3,8 @@
 
 #include "mcc.h"
 
+#include <ctype.h>
+
 /**
  * Allocate a new token and add it to the list. This is better than allocating
  * each token as a seperate region in memory using malloc, as it will use way
@@ -38,8 +40,31 @@ static inline struct token *tok_new_kind(struct token_list *toks, token_k kind)
 
 struct token_list *lex(struct mapped_file *file)
 {
-    struct token_list *toks;
+    struct token_list *toks = NULL;
     struct token *tok;
+    char *p = file->source;
+
+    while (*p != EOF) {
+        if (isspace(*p))
+            goto skip;
+
+        if (*p == '/' && *(p + 1) == '*') {
+            while (*p != EOF && *(p + 1) != EOF && *p != '*'
+                   && *(p + 1) != '/') {
+                p++;
+            }
+
+            if (*p == EOF || *(p + 1) == EOF) {
+                err_at(file, (*p == EOF) ? p : p + 1, 1,
+                       "unexpected end of file");
+            } else {
+                p = p + 2;
+            }
+        }
+
+skip:
+        p++;
+    }
 
     /* Make the last token a EOF. */
     tok = tok_new_kind(toks, TK_EOF);
