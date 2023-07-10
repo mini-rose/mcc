@@ -15,7 +15,7 @@ OUT := build/mcc
 BT  ?= debug
 
 ifeq ($(BT), debug)
-	CFLAGS += -O0 -ggdb -DDEBUG -fsanitize=address
+	CFLAGS += -O0 -ggdb -DDEBUG=1 -fsanitize=address
 else ifeq ($(BT), release)
 	CFLAGS += -O3 -s
 else
@@ -33,8 +33,12 @@ clean:
 	echo "  RM build"
 	rm -rf build
 
+install:
+	echo "  CP $(OUT) /usr/bin/mcc"
+	cp $(OUT) /usr/bin/mcc
+
 compile_flags.txt:
-	echo $(CFLAGS) | tr '\n' ' ' > compile_flags.txt
+	echo $(CFLAGS) | tr ' ' '\n' > compile_flags.txt
 
 $(OUT): $(OBJ)
 	@echo "  LD $@"
@@ -45,4 +49,5 @@ build/%.o: src/%.c
 	@$(CC) -c -o $@ $(CFLAGS) $<
 
 
-.SILENT: build clean
+.PHONY: compile_flags.txt
+.SILENT: build clean install
