@@ -12,11 +12,16 @@
 #define MCC_MAJOR 0
 #define MCC_MINOR 3
 
+#define STRINGIFY(X)  _STRINGIFY(X)
+#define _STRINGIFY(X) #X
+
+#define TABLE_SIZE(X) (sizeof(X) / sizeof(*X))
+
 enum token_k
 {
     TK_EOF = -1,
-    TK_NEWLINE = 0, // \n
-    TK_SYMBOL,      // <symbol>
+    TK_SYMBOL, // <symbol>
+    TK_STRING, // "string"
 };
 
 enum node_k
@@ -53,7 +58,9 @@ struct token_list
  */
 struct token_list *lex(struct mapped_file *file);
 
-void token_list_free(struct token_list *tokens);
+/* Token list API */
+void token_list_free(struct token_list *);
+void token_list_dump(struct token_list *);
 
 /**
  * Anything that can be named as a single object is a node. For example, a

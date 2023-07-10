@@ -27,6 +27,8 @@ int main(int argc, char **argv)
 
     tokens = lex(source);
 
+    token_list_dump(tokens);
+
     file_free(source);
     options_free(opts);
     token_list_free(tokens);

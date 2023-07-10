@@ -44,3 +44,34 @@ void dump_bytes(void *addr, int len)
         fputc('\n', stdout);
     }
 }
+
+void token_list_dump(struct token_list *tokens)
+{
+    struct token_name
+    {
+        token_k kind;
+        const char *name;
+    };
+
+#define TN(TOK)                                                                \
+ {                                                                             \
+  TK_##TOK, #TOK                                                               \
+ }
+
+    static const struct token_name token_names[] = {TN(EOF), TN(SYMBOL),
+                                                    TN(STRING)};
+
+    struct token *tok;
+
+    for (size_t i = 0; i < tokens->len; i++) {
+        tok = &tokens->tokens[i];
+
+        for (size_t j = 0; j < TABLE_SIZE(token_names); j++) {
+            if (tok->kind == token_names[j].kind) {
+                printf("%s len=%d pos=`%.*s`\n", token_names[j].name, tok->len,
+                       tok->len, tok->pos);
+                break;
+            }
+        }
+    }
+}
