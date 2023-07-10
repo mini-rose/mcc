@@ -1,0 +1,13 @@
+Memory in the compiler
+======================
+
+Conventionally, when a resource is acquired it also has to be free'd. Some
+general rules need to be layed out in order to ensure sanity when working
+with C malloc/free.
+
+1. When a function returns a pointer to a structure, a struct_name_free
+   function must be provided which will also free() the whole structure,
+   including the contents.
+
+   For example, a `struct options` will have a `options_free` functions
+   where the opts struct will be free'd.
