@@ -10,12 +10,21 @@
 #include <unistd.h>
 
 #define MCC_MAJOR 0
-#define MCC_MINOR 3
+#define MCC_MINOR 4
 
 #define STRINGIFY(X)  _STRINGIFY(X)
 #define _STRINGIFY(X) #X
 
 #define TABLE_SIZE(X) (sizeof(X) / sizeof(*X))
+
+#if DEBUG
+# define IFDEBUG(CODE) CODE
+#else
+# define IFDEBUG(CODE)
+#endif
+
+#define __unused      __attribute__((unused))
+#define __warn_unused __attribute__((warn_unused_result))
 
 enum token_k
 {
@@ -24,13 +33,11 @@ enum token_k
     TK_STRING, // "string"
 };
 
+/* Any change to this changes a lot in node.c */
 enum node_k
 {
     NOD_MODULE,
-    NOD_FUNCTION,
-    NOD_VARDECL,
-    NOD_ASSIGN,
-    NOD_RET,
+    NOD_FUNCTION
 };
 
 typedef enum token_k token_k;
@@ -96,25 +103,54 @@ void token_list_dump(struct token_list *);
  * Data
  *
  * Some nodes may have custom data, like the name of the function or an argument
- * list. This kind of information is allocated in a seperate region pointed by
- * the .data field.
+ * list. This kind of information is placed right after the node header.
  */
 struct node
 {
     struct node *parent;
     struct node *child;
     struct node *next;
-
     node_k kind;
-
-    void *data;
 };
+
+struct node_module
+{
+    struct node head;
+    char *source_path;
+};
+
+struct node_function
+{
+    struct node head;
+    char *name;
+};
+
+#define NA_MODULE(PTR)   ((struct node_module *) PTR)
+#define NA_FUNCTION(PTR) ((struct node_function *) PTR)
 
 /**
  * Convert the token list into an AST, validating the whole thing. The returned
- * tree is assumed to be correct.
+ * tree is assumed to be correct, otherwise throws an error.
  */
-struct node *parse(struct token_list *tokens);
+struct node *parse(struct mapped_file *source, struct token_list *);
+
+/* Node API */
+
+/**
+ * Returns a struct node *. Creates a new node of the given kind. If parent is
+ * NULL, a new tree is created, otherwise the new node is added as a child to
+ * the parent node.
+ */
+void *node_create(void *parent, node_k kind) __warn_unused;
+
+/**
+ * Free this node and all its children. Note, this does _not_ free the next
+ * node, which means that it will become a dangling pointer unless you keep
+ * it.
+ */
+void node_free(struct node *);
+
+void node_dump(struct node *);
 
 struct mapped_file
 {
