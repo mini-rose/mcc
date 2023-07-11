@@ -1,0 +1,55 @@
+Syntax
+======
+
+Example
+-------
+
+
+import types
+import io
+
+type Array<T> {
+    len: i32
+    values: &T
+}
+
+type IntArray = Array<i32>
+
+fun main(args: str[]) -> null {
+    io.print("something %d", 1)
+}
+
+rule Number<T> = types.Addable<T>
+               & types.Subtractable<T>
+               & types.Multipliable<T>
+               & types.Divisible<T>
+
+fun add<T: Number>(a: T, b: T) -> T {
+    ret a + b
+}
+
+
+Grammar
+-------
+
+
+module = { import | type-decl | func-decl }*
+
+import = 'import' { string | symbol }
+       | 'include' { string | symbol }
+
+type-decl = 'type' symbol [ generic-list ] '{' { name-type-pair }* '}'
+          | 'type' symbol '=' type
+
+func-decl = 'fun' symbol [ [ generic-list ] argument-list ] [ '->' type ] '{' { expr }* '}'
+
+generic-list = '<' symbol { ',' symbol }* '>'
+
+name-type-pair = symbol ':' type
+
+argument-list = '(' { symbol ':' type }* ')'
+
+type = [ '&' ] symbol [ '<' type { ',' type }* '>' ] [ '[]' ]
+
+expr =
+
